@@ -108,12 +108,6 @@ def get_vm_instances(project_id, regions) -> list[VirtualMachine]:
     
     all_vm_data = []
 
-    # Set the time period for the query (one month)
-    today = datetime.now()
-    start_time = today - timedelta(days=30)
-    end_time = today
-
-
     # Iterate through zones
     for zone in get_zones(project_id, regions):
         logging.info(f"Processing zone: {zone} in project: {project_id}")  # Log zone and project
@@ -181,20 +175,20 @@ def get_vm_instances(project_id, regions) -> list[VirtualMachine]:
                 #print(disk)
             
             ## Check for monitoring metrics
-            obtain_performance_metrics(project_id, zone, start_time, end_time, vm)
+            obtain_performance_metrics(project_id, vm)
             
             all_vm_data.append(vm)
             
         logging.info(f"Processing zone: {zone} in project: {project_id}, now {len(all_vm_data)} instances")  # Log zone and project
     return all_vm_data
 
-def obtain_performance_metrics(project_id: str, zone: str, start_time: datetime, end_time: datetime, vm: VirtualMachine):
+def obtain_performance_metrics(project_id: str, vm: VirtualMachine):
   
     # Get CPU usage metrics
-    cpu_data = get_vm_metrics(project_id, vm.instance_name, zone, 'cpu', start_time, end_time)
+    cpu_data = get_vm_metrics(project_id, vm.instance_name, 'cpu')
 
     # Get memory usage metrics
-    memory_data = get_vm_metrics(project_id, vm.instance_name, zone, 'memory', start_time, end_time)
+    memory_data = get_vm_metrics(project_id, vm.instance_name, 'memory')
 
     # Print the results
     print("CPU Usage:")
@@ -206,7 +200,7 @@ def obtain_performance_metrics(project_id: str, zone: str, start_time: datetime,
         print(f"Timestamp: {data_point.timestamp}, Value: {data_point.value_in_gb()}")
 
 
-def get_vm_metrics(project_id, instance_name, zone, metric_type, start_time, end_time) -> list[Timeserie]:
+def get_vm_metrics(project_id, instance_name, metric_type) -> list[Timeserie]:
     """
     Retrieves memory or CPU usage metrics for a VM instance over a specified time period.
 
