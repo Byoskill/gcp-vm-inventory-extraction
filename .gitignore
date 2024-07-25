@@ -1,0 +1,66 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.eggs/
+dist/
+build/
+develop-eggs/
+eggs/
+lib/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Django stuff
+*.sqlite3
+*.db
+db.sqlite3
+
+# Flask stuff
+instance/
+
+# PyInstaller
+*.spec
+*.pyz
+*.pyc
+*.pyo
+
+# Unit test / coverage reports
+coverage.xml
+*.coverage
+*.pyc
+*.pyo
+*.pyd
+*.log
+.coverage
+.tox
+.cache
+nosetests.xml
+.hypothesis/
+
+# Sphinx documentation
+docs/_build/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Celery stuff
+celerybeat-schedule
+celeryd.pid
+
+# AWS
+.aws/
+
+# Google Cloud
+.google-cloud-sdk/
+
+# venv
+venv/
+
