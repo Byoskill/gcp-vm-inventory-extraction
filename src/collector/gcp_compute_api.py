@@ -6,7 +6,7 @@ from google.cloud import monitoring_v3
 from datetime import datetime, timedelta
 from google.cloud import resourcemanager_v3
 import logging
-from collector.perf_metrics import get_vm_metrics, obtain_performance_metrics
+from collector.perf_metrics import fetch_disk_utilization, get_vm_metrics, obtain_performance_metrics
 from model.infrastructure.disk import Disk
 from model.infrastructure.label import Label
 from model.infrastructure.timeserie import Timeserie
@@ -167,7 +167,7 @@ def get_vm_instances(project_id, regions) -> list[VirtualMachine]:
             
             # Add Disks
             scan_disks(instance, vm)
-            disk_utilization = disk_utilization(project_id, vm)
+            disk_utilization = fetch_disk_utilization(project_id, vm)
             print("Disk utililzation", disk_utilization)
             vm.disk_utilization = disk_utilization
             ## Check for monitoring metrics
