@@ -64,7 +64,7 @@ class MPAGenerator(Generator):
                 "Google Compute Engine",  # hypervisor
                 instance.instance_name,  # HOSTNAME
                 instance.os,  # osName
-                None,  # osVersion (You'll need to extract this from the OS string)
+                None,  # osVersion (You'll need to extract this from thesse OS string)
                 instance.cpu_cores,  # numCpus
                 1,  # numCoresPerCpu (Assuming 1 core per CPU)
                 1,  # numThreadsPerCore (Assuming 1 thread per core)
@@ -80,8 +80,6 @@ class MPAGenerator(Generator):
                 None,  # Storage-Max Read IOPS Size (KB)
                 None,  # Storage-Max Write IOPS Size (KB)
             ]
-            worksheet.append(row)
-
             worksheet.append(row)
 
         # Save the Excel file
