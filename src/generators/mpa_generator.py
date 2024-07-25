@@ -60,13 +60,16 @@ class MPAGenerator(Generator):
                 max_ram_usage = memory_df['value'].max() / 1024 / 1024  # Convert to GB
                 avg_ram_usage = memory_df['value'].mean() / 1024 / 1024  # Convert to GB
 
+                osVersion = instance.disks[0].licences[-1]
+                os = instance.disks[0].licences[0]
+
                 row = [
                     instance.instance_name,  # Serverid
                     instance.is_virtual,  # isPhysical
                     "Google Compute Engine",  # hypervisor
                     instance.instance_name,  # HOSTNAME
-                    instance.os,  # osName
-                    None,  # osVersion (You'll need to extract this from thesse OS string)
+                    os,  # osName
+                    osVersion,  # osVersion (You'll need to extract this from thesse OS string)
                     instance.cpu_cores,  # numCpus
                     1,  # numCoresPerCpu (Assuming 1 core per CPU)
                     1,  # numThreadsPerCore (Assuming 1 thread per core)
