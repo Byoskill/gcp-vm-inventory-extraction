@@ -11,6 +11,9 @@ class VirtualMachine:
     disks: list[Disk] = []
     memory_data : list[Timeserie] = []
     cpu_data : list[Timeserie] = []
+    disk_utilization = 0.75
+    max_read_iops = 0
+    max_write_iops = 0
     
     def __init__(self, 
                  project_id, 

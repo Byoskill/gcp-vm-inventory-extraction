@@ -6,6 +6,7 @@ from google.cloud import monitoring_v3
 from datetime import datetime, timedelta
 from google.cloud import resourcemanager_v3
 import logging
+from collector.perf_metrics import get_vm_metrics, obtain_performance_metrics
 from model.infrastructure.disk import Disk
 from model.infrastructure.label import Label
 from model.infrastructure.timeserie import Timeserie
@@ -165,15 +166,10 @@ def get_vm_instances(project_id, regions) -> list[VirtualMachine]:
                 vm.labels.append(lbl) 
             
             # Add Disks
-            for diskinfo in instance.disks:
-                disk = Disk( diskinfo.device_name, diskinfo.mode, diskinfo.type, diskinfo.disk_size_gb, [] )
-                for license in diskinfo.licenses:             
-                    #print(  "License ", license, project_id)
-                    license_name = license.split('/')[-1]
-                    disk.add_license(license_name)                    
-                vm.disks.append(disk)
-                #print(disk)
-            
+            scan_disks(instance, vm)
+            disk_utilization = disk_utilization(project_id, vm)
+            print("Disk utililzation", disk_utilization)
+            vm.disk_utilization = disk_utilization
             ## Check for monitoring metrics
             obtain_performance_metrics(project_id, vm)
             
@@ -182,96 +178,17 @@ def get_vm_instances(project_id, regions) -> list[VirtualMachine]:
         logging.info(f"Processing zone: {zone} in project: {project_id}, now {len(all_vm_data)} instances")  # Log zone and project
     return all_vm_data
 
-def obtain_performance_metrics(project_id: str, vm: VirtualMachine):
-  
-    # Get CPU usage metrics
-    cpu_data = get_vm_metrics(project_id, vm, 'cpu')
-
-    # Get memory usage metrics
-    memory_data = get_vm_metrics(project_id, vm, 'memory')
-
-    vm.memory_data = memory_data
-    vm.cpu_data = cpu_data
-
-    # Print the results
-    print("CPU Usage:")
-    for data_point in cpu_data:
-        print(f"Timestamp: {data_point.timestamp}, Value: {data_point.value}")
-
-    print("\nMemory Usage:")
-    for data_point in memory_data:
-        print(f"Timestamp: {data_point.timestamp}, Value: {data_point.value_in_gb()}")
-
-
-def get_vm_metrics(project_id, instance, metric_type) -> list[Timeserie]:    
-    """
-    Retrieves memory or CPU usage metrics for a VM instance over a specified time period.
-
-    Args:
-        project_id (str): The ID of the GCP project.
-        instance_name (str): The name of the VM instance.
-        zone (str): The zone where the VM instance is located.
-        metric_type (str): The type of metric to retrieve ('memory' or 'cpu').
-        start_time (datetime): The start time of the time period.
-        end_time (datetime): The end time of the time period.
-
-    Returns:
-        list: A list of metric data points, or an empty list if no data is found.
-    """
-    instance_name = instance.instance_name
-    client = monitoring_v3.QueryServiceClient()
-    
-    metric_data : list[Timeserie] = []
-
-    # Loop through the last 30 days
-    #for i in range(1,2):
-    end_time = datetime.now()
-    start_time = end_time - timedelta(days=(30))
-
-    query = ""
-    if metric_type == 'memory':
-        query= f"""
-        fetch gce_instance
-        | metric 'compute.googleapis.com/instance/memory/balloon/ram_used'
-        | filter (metric.instance_name == '{instance_name}')
-        | group_by 1d, [value_ram_used_mean: mean(value.ram_used)]
-        | every 1d
-        | within   d'{start_time.strftime("%Y/%m/%d-%H:%M:%S")}', d'{end_time.strftime("%Y/%m/%d-%H:%M:%S")}'
-        """
-    else: 
-        query = f"""
-        fetch gce_instance
-        | metric 'compute.googleapis.com/instance/cpu/utilization'
-        | filter (metric.instance_name == '{instance_name}')
-        | group_by 1d, [value_utilization_mean: mean(value.utilization)]
-        | every 1d
-        | within   d'{start_time.strftime("%Y/%m/%d-%H:%M:%S")}', d'{end_time.strftime("%Y/%m/%d-%H:%M:%S")}'
-        """
-    logging.info(query)
-
-    # Execute the query
-    response = client.query_time_series(
-        monitoring_v3.QueryTimeSeriesRequest(
-            name=f"projects/{project_id}",
-            query=query,
-        )
-    )    
-
-    # Extract metric data points
-    for time_series in response.time_series_data:
-        i = 1
-        for point in time_series.point_data:
-            timestamp = end_time - timedelta(days=(i))
-            value = point.values[0].double_value
-            metric_data.append(Timeserie(
-                timestamp,
-                value
-            ))
-            i = i + 1
-    
-    return metric_data
-
-
+def scan_disks(instance, vm):
+    for diskinfo in instance.disks:
+        print("Disk", diskinfo)
+        disk = Disk( diskinfo.device_name, diskinfo.mode, diskinfo.type, diskinfo.disk_size_gb, [] )
+        for license in diskinfo.licenses:             
+            #print(  "License ", license, project_id)
+            license_name = license.split('/')[-1]
+            disk.add_license(license_name)                    
+        vm.disks.append(disk)
+        
+        #print(disk)
 
 def extract_model_from_gcp(organization_id= None, project_id=None, regions:list[str] = ["us-central1", "us-east1", "us-west1"]) -> GcpInfrastructure:
     projects = list_projects(organization_id, project_id)
