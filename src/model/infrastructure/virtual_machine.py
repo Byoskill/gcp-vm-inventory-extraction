@@ -2,11 +2,14 @@ from typing import Dict
 
 from model.infrastructure.disk import Disk
 from model.infrastructure.label import Label
+from model.infrastructure.timeserie import Timeserie
 
 
 class VirtualMachine:
     labels : list[Label] = []
     disks: list[Disk] = []
+    memory_data : list[Timeserie] = []
+    cpu_data : list[Timeserie] = []
     
     def __init__(self, 
                  project_id, 
@@ -35,4 +38,5 @@ class VirtualMachine:
         self.is_shared_cpu = is_shared_cpu
         self.monitoring_enabled = False
         self.logging_enabled = False
+        
 

@@ -185,10 +185,13 @@ def get_vm_instances(project_id, regions) -> list[VirtualMachine]:
 def obtain_performance_metrics(project_id: str, vm: VirtualMachine):
   
     # Get CPU usage metrics
-    cpu_data = get_vm_metrics(project_id, vm.instance_name, 'cpu')
+    cpu_data = get_vm_metrics(project_id, vm, 'cpu')
 
     # Get memory usage metrics
-    memory_data = get_vm_metrics(project_id, vm.instance_name, 'memory')
+    memory_data = get_vm_metrics(project_id, vm, 'memory')
+
+    vm.memory_data = memory_data
+    vm.cpu_data = cpu_data
 
     # Print the results
     print("CPU Usage:")
@@ -260,6 +263,7 @@ def get_vm_metrics(project_id, instance_name, metric_type) -> list[Timeserie]:
                 value
             ))
 
+    
     return metric_data
 
 

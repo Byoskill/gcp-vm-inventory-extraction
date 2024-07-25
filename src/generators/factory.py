@@ -3,6 +3,7 @@ from typing import Dict
 from generators.csv_generator import CSVGenerator
 from generators.json_generator import JSONGenerator
 from generators.yaml_generator import YAMLGenerator
+from generators.mpa_generator import MPAGenerator
 from model.infrastructure.gcp_infrastructure import GcpInfrastructure
 from model.generator import Generator
 
@@ -10,6 +11,7 @@ GENERATORS: Dict[str, Generator] = {
     "csv": CSVGenerator(),
     "json": JSONGenerator(),
     "yaml": YAMLGenerator(),
+    'mpa': MPAGenerator(),
 }
 
 
