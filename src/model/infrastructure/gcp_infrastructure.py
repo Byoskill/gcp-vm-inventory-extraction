@@ -8,7 +8,6 @@ class GcpInfrastructure:
     
     
     def add_new_virtual_machine(self, vm: VirtualMachine):
-        
         self.vm_instances.append(vm)
 
     def add_new_virtual_machines(self, vms: list ):

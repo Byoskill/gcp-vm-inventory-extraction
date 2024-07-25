@@ -43,11 +43,12 @@ class MPAGenerator(Generator):
 
 
         # Iterate through GCP VM instances and populate data
-        for instance  in gcp_infrastructure.instances:
+        for instance  in gcp_infrastructure.vm_instances:
             
             # Compute metrics using pandas
-            cpu_df = pd.DataFrame(instance.cpu_data, columns=['timestamp', 'value'])
-            memory_df = pd.DataFrame(instance.memory_data, columns=['timestamp', 'value'])
+            #pd.DataFrame(instance.cpu_data, columns=['timestamp', 'value'])
+            cpu_df = instance.cpu_data_frame()
+            memory_df = instance.memory_data_frame()
 
             # Calculate CPU stats
             max_cpu_usage = cpu_df['value'].max() * 100  # Convert to percentage

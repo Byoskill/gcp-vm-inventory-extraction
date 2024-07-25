@@ -1,4 +1,5 @@
 from typing import Dict
+import pandas as pd
 
 from model.infrastructure.disk import Disk
 from model.infrastructure.label import Label
@@ -38,5 +39,16 @@ class VirtualMachine:
         self.is_shared_cpu = is_shared_cpu
         self.monitoring_enabled = False
         self.logging_enabled = False
-        
+
+    def cpu_data_frame(self):
+        liste = []
+        for instance in self.cpu_data:
+            liste.append([instance.timestamp, instance.value])        
+        return pd.DataFrame(liste, columns=['timestamp', 'value'])
+    
+    def memory_data_frame(self):
+        liste = []
+        for instance in self.memory_data:
+            liste.append([instance.timestamp, instance.value])        
+        return pd.DataFrame(liste, columns=['timestamp', 'value'])
 

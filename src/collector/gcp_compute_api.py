@@ -203,7 +203,7 @@ def obtain_performance_metrics(project_id: str, vm: VirtualMachine):
         print(f"Timestamp: {data_point.timestamp}, Value: {data_point.value_in_gb()}")
 
 
-def get_vm_metrics(project_id, instance_name, metric_type) -> list[Timeserie]:
+def get_vm_metrics(project_id, instance, metric_type) -> list[Timeserie]:    
     """
     Retrieves memory or CPU usage metrics for a VM instance over a specified time period.
 
@@ -218,8 +218,15 @@ def get_vm_metrics(project_id, instance_name, metric_type) -> list[Timeserie]:
     Returns:
         list: A list of metric data points, or an empty list if no data is found.
     """
-
+    instance_name = instance.instance_name
     client = monitoring_v3.QueryServiceClient()
+    
+    metric_data : list[Timeserie] = []
+
+    # Loop through the last 30 days
+    #for i in range(1,2):
+    end_time = datetime.now()
+    start_time = end_time - timedelta(days=(30))
 
     query = ""
     if metric_type == 'memory':
@@ -228,10 +235,8 @@ def get_vm_metrics(project_id, instance_name, metric_type) -> list[Timeserie]:
         | metric 'compute.googleapis.com/instance/memory/balloon/ram_used'
         | filter (metric.instance_name == '{instance_name}')
         | group_by 1d, [value_ram_used_mean: mean(value.ram_used)]
-        | every 1m
-        | group_by [metric.instance_name],
-            [value_ram_used_mean_aggregate: aggregate(value_ram_used_mean)]
-        | window 30d
+        | every 1d
+        | within   d'{start_time.strftime("%Y/%m/%d-%H:%M:%S")}', d'{end_time.strftime("%Y/%m/%d-%H:%M:%S")}'
         """
     else: 
         query = f"""
@@ -239,10 +244,10 @@ def get_vm_metrics(project_id, instance_name, metric_type) -> list[Timeserie]:
         | metric 'compute.googleapis.com/instance/cpu/utilization'
         | filter (metric.instance_name == '{instance_name}')
         | group_by 1d, [value_utilization_mean: mean(value.utilization)]
-        | every 1m
-        | window 30d
+        | every 1d
+        | within   d'{start_time.strftime("%Y/%m/%d-%H:%M:%S")}', d'{end_time.strftime("%Y/%m/%d-%H:%M:%S")}'
         """
-    logging.debug(query)
+    logging.info(query)
 
     # Execute the query
     response = client.query_time_series(
@@ -253,16 +258,16 @@ def get_vm_metrics(project_id, instance_name, metric_type) -> list[Timeserie]:
     )    
 
     # Extract metric data points
-    metric_data : list[Timeserie] = []
     for time_series in response.time_series_data:
+        i = 1
         for point in time_series.point_data:
-            timestamp = datetime.fromtimestamp(point.time_interval.end_time.second)
+            timestamp = end_time - timedelta(days=(i))
             value = point.values[0].double_value
             metric_data.append(Timeserie(
                 timestamp,
                 value
             ))
-
+            i = i + 1
     
     return metric_data
 
