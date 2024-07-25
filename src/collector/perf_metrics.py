@@ -25,13 +25,13 @@ def obtain_performance_metrics(project_id: str, vm: VirtualMachine):
     vm.cpu_data = cpu_data
     
     # Print the results
-    print("CPU Usage:")
+    logging.debug("CPU Usage:")
     for data_point in cpu_data:
-        print(f"Timestamp: {data_point.timestamp}, Value: {data_point.value}")
+        logging.debug(f"Timestamp: {data_point.timestamp}, Value: {data_point.value}")
 
-    print("\nMemory Usage:")
+    logging.debug("\nMemory Usage:")
     for data_point in memory_data:
-        print(f"Timestamp: {data_point.timestamp}, Value: {data_point.value_in_gb()}")
+        logging.debug(f"Timestamp: {data_point.timestamp}, Value: {data_point.value_in_gb()}")
 
 
 def get_vm_metrics(project_id, instance, metric_type) -> list[Timeserie]:    
@@ -113,6 +113,8 @@ fetch gce_instance
 | group_by 2m, [value_percent_used_mean: mean(value.percent_used)]
 | every 2m
     """ 
+    logging.info(query)
+    
     client = monitoring_v3.QueryServiceClient()
 
     # Execute the query
